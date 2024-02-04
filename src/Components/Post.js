@@ -1,50 +1,76 @@
-import React from "react";
-
+import axios from "axios";
+import React, { useEffect, useState, useRef } from "react";
+import { FaAngleRight } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 
-import { IoHomeSharp } from "react-icons/io5";
-import { FaBell } from "react-icons/fa";
-import { FaUser } from "react-icons/fa";
-import { FaBookmark } from "react-icons/fa";
+import { useSelector, useDispatch } from "react-redux";
+import { setOpenPost } from "../redux/features/openPostSlice";
 
-import { NavLink, useLocation } from "react-router-dom";
+const Post = ({ post }) => {
+  const [readMore, setReadMore] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
 
-const Navbar = () => {
-  let { pathname } = useLocation();
+  const [image, setImage] = useState(
+    `https://picsum.photos/200?random=${post.id}`
+  );
+
+  const dispatch = useDispatch();
+
+  const postBodyRef = useRef(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (postBodyRef.current) {
+      const isOverflowing =
+        postBodyRef.current.scrollHeight > postBodyRef.current.clientHeight;
+      setIsOverflowing(isOverflowing);
+    }
+  }, [post.body]);
 
   return (
-    <div className="flex items-center h-16 w-screen bg-dark-orange max-sm:justify-center shadow-md">
-      <NavLink to="/">
-        <div className="m-2 font-semibold text-white text-lg">
-          TravelMedia.in
+    <div className="bg-white rounded-lg w-fit p-5 drop-shadow-xl">
+      <div className="">
+        <img
+          src={image}
+          className="bg-cover w-full h-full rounded-2xl drop-shadow-lg"
+        />
+      </div>
+      <div className="flex items-center justify-between mt-3 gap-2">
+        <div className="">
+          <p className="font-semibold text-lg h-9 overflow-hidden">
+            {post.title}
+          </p>
+          <p
+            className={`text-gray-500 h-36 text-md overflow-hidden ${
+              isOverflowing ? "max-h-36" : ""
+            }`}
+            ref={postBodyRef}
+          >
+            {post.body}
+          </p>
+          <span
+            className="text-dark-orange font-semibold cursor-pointer"
+            onClick={() => {
+              dispatch(setOpenPost({ ...post, image }));
+              navigate(`/post/detail/${post.id}`);
+            }}
+          >
+            {isOverflowing && "Read more..."}
+          </span>
         </div>
-      </NavLink>
-      <div className="Options flex flex-1 justify-center max-sm:hidden">
-        <div className="bg-white flex gap-16 h-10 items-center justify-center p-4 rounded-full">
-          <NavLink to="/">
-            <IoHomeSharp
-              className={`${pathname === "/" ? "text-dark-orange" : "text-light-orange"} hover:text-dark-orange text-2xl`}
-            />
-          </NavLink>
-          <NavLink to="/notification">
-            <FaBell
-              className={`${pathname === "/notification" ? "text-dark-orange" : "text-light-orange"} hover:text-dark-orange text-2xl`}
-            />
-          </NavLink>
-          <NavLink to="/bookmark">
-            <FaBookmark
-              className={`${pathname === "/bookmark" ? "text-dark-orange" : "text-light-orange"} hover:text-dark-orange text-2xl`}
-            />
-          </NavLink>
-          <NavLink to="/user/details">
-            <FaUser
-              className={`${pathname === "/user/details" ? "text-dark-orange" : "text-light-orange"} hover:text-dark-orange text-2xl`}
-            />
-          </NavLink>
+        <div
+          className="p-3 bg-black flex items-center cursor-pointer justify-center bg-gradient-to-r from-light-orange -rotate-90 to-dark-orange rounded-md  hover:from-dark-orange hover:to-dark-orange"
+          onClick={() => {
+            navigate(`/post/detail/${post.id}`);
+            dispatch(setOpenPost({ ...post, image }));
+          }}
+        >
+          <FaAngleRight className="text-white rotate-90 text-xl" />
         </div>
       </div>
     </div>
   );
 };
 
-export default Navbar;
+export default Post;
